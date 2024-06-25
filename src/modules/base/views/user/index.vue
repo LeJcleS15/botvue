@@ -20,8 +20,9 @@
 						type="success"
 						:disabled="Table?.selection.length == 0"
 						@click="toMove()"
-						>转移</el-button
 					>
+						转移
+					</el-button>
 					<cl-flex1 />
 					<cl-search-key placeholder="搜索用户名、姓名" />
 				</cl-row>
@@ -35,8 +36,9 @@
 								text
 								bg
 								@click="toMove(scope.row)"
-								>转移</el-button
 							>
+								转移
+							</el-button>
 						</template>
 					</cl-table>
 				</cl-row>
@@ -140,7 +142,7 @@ const Table = useTable({
 			prop: "createTime",
 			label: "创建时间",
 			sortable: "desc",
-			minWidth: 160
+			minWidth: 170
 		},
 		{
 			type: "op",

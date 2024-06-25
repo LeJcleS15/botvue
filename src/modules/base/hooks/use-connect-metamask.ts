@@ -7,22 +7,20 @@
 import Web3 from "web3";
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { USER_WALLET_ADDRESS, SIGN } from "../const/localstorage";
-import { sign } from "crypto";
 
 
 // 将 Metamask 连接相关的逻辑封装成一个 Vue 组合式函数
 export function useConnectMetamask() {
-
     // 用户钱包地址
     const addresses = ref<string[]>([]);
     // 按钮 loading 状态
     const loading = ref(false);
 
     // 连接 Metamask 钱包
-    const connectMetamask = async () => {
-        const timestamp = Date.now();
+    const connectMetamask = async (genNonce) => {
         loading.value = true;
-        const exampleMessage = '你好, 欢迎 👏 登录！' + timestamp.toString();
+        const exampleMessage = '你好, 欢迎登录AIObot,' + genNonce;
+        console.log(exampleMessage);
         if (!window.ethereum) return alert("请先安装 Metamask 钱包");
         try {
             const from = await window.ethereum.request({
@@ -44,6 +42,7 @@ export function useConnectMetamask() {
             // 保存用户钱包地址
             // localStorage.setItem(SIGN, signature);
             localStorage.setItem(USER_WALLET_ADDRESS, JSON.stringify(from));
+            return { signature, from };
         } catch (err) {
             console.error(err);
         } finally {
@@ -74,7 +73,7 @@ export function useConnectMetamask() {
         try {
             addresses.value = JSON.parse(storedData || "[]");
         } catch (error) {
-            console.error("Error parsing JSON data:", error);
+            console.log("Error parsing JSON data:", error);
             addresses.value = [];
         }
     });

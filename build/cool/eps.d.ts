@@ -1640,6 +1640,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface ScrollRun {
+		/**
+		 * 更新配置参数并启动 Python 脚本
+		 */
+		runTask(data?: any): Promise<any>;
+		/**
+		 * 权限标识
+		 */
+		permission: { runTask: string };
+		/**
+		 * 权限状态
+		 */
+		_permission: { runTask: boolean };
+		/**
+		 * 请求
+		 */
+		request: Service["request"];
+	}
+
 	interface SpaceInfo {
 		/**
 		 * 删除
@@ -1943,23 +1962,23 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
-	interface ChatMessage {
+	interface ChatSession {
 		/**
 		 * page
 		 */
 		page(data?: any): Promise<{
 			pagination: { size: number; page: number; total: number; [key: string]: any };
-			list: ChatMessageEntity[];
+			list: ChatSessionEntity[];
 			[key: string]: any;
 		}>;
 		/**
 		 * list
 		 */
-		list(data?: any): Promise<ChatMessageEntity[]>;
+		list(data?: any): Promise<ChatSessionEntity[]>;
 		/**
 		 * info
 		 */
-		info(data?: any): Promise<ChatMessageEntity>;
+		info(data?: any): Promise<ChatSessionEntity>;
 		/**
 		 * delete
 		 */
@@ -2000,23 +2019,23 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
-	interface ChatSession {
+	interface ChatMessage {
 		/**
 		 * page
 		 */
 		page(data?: any): Promise<{
 			pagination: { size: number; page: number; total: number; [key: string]: any };
-			list: ChatSessionEntity[];
+			list: ChatMessageEntity[];
 			[key: string]: any;
 		}>;
 		/**
 		 * list
 		 */
-		list(data?: any): Promise<ChatSessionEntity[]>;
+		list(data?: any): Promise<ChatMessageEntity[]>;
 		/**
 		 * info
 		 */
-		info(data?: any): Promise<ChatSessionEntity>;
+		info(data?: any): Promise<ChatMessageEntity>;
 		/**
 		 * delete
 		 */
@@ -2145,10 +2164,11 @@ declare namespace Eps {
 		dict: { info: DictInfo; type: DictType };
 		plugin: { info: PluginInfo };
 		recycle: { data: RecycleData };
+		scroll: { run: ScrollRun };
 		space: { info: SpaceInfo; type: SpaceType };
 		task: { info: TaskInfo };
 		user: { address: UserAddress; info: UserInfo };
-		chat: { message: ChatMessage; session: ChatSession };
+		chat: { session: ChatSession; message: ChatMessage };
 		test: Test;
 	};
 }

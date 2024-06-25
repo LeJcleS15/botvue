@@ -11,10 +11,12 @@
 	"dependencies": {
 		"@cool-vue/crud": "^7.1.16",
 		"@element-plus/icons-vue": "^2.3.1",
+		"@solana/web3.js": "^1.93.0",
 		"@vueuse/core": "^10.4.0",
 		"@wangeditor/editor": "^5.1.23",
 		"@wangeditor/editor-for-vue": "^5.1.12",
 		"axios": "^1.6.7",
+		"bs58": "^5.0.0",
 		"chardet": "^2.0.0",
 		"core-js": "^3.32.1",
 		"dayjs": "^1.11.10",

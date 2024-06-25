@@ -1,7 +1,6 @@
 <template>
 	<div class="app-slider">
 		<div class="app-slider__logo">
-			<img src="/logo.png" />
 			<span v-if="!app.isFold || browser.isMini">{{ app.info.name }}</span>
 		</div>
 

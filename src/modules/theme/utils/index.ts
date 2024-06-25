@@ -47,7 +47,7 @@ export const themes = [
 	}
 ];
 
-export function setTheme({ color, name, isGroup, transition }: Theme) {
+export function setTheme({ color, name, transition }: Theme) {
 	const { app } = useBase();
 
 	// 主题配置
@@ -93,25 +93,18 @@ export function setTheme({ color, name, isGroup, transition }: Theme) {
 		theme.color = color;
 	}
 
-	// 菜单分组显示
-	if (isGroup !== undefined) {
-		theme.isGroup = isGroup;
-		app.set({
-			menu: {
-				isGroup
-			}
-		});
-	}
+	app.set({
+		menu: {
+			isGroup:true
+		}
+	});
 
-	// 转场动画
-	if (transition !== undefined) {
-		theme.transition = transition;
-		app.set({
-			router: {
-				transition
-			}
-		});
-	}
+
+	app.set({
+		router: {
+			transition:"none"
+		}
+	});
 
 	storage.set("theme", theme);
 }

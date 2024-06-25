@@ -44,19 +44,6 @@
 						>{{ form.color }}</span
 					>
 				</el-form-item>
-
-				<el-form-item label="菜单分组显示">
-					<el-switch v-model="form.theme.isGroup" @change="setGroup"></el-switch>
-				</el-form-item>
-
-				<el-form-item label="转场动画">
-					<el-switch
-						v-model="form.theme.transition"
-						active-value="slide"
-						inactive-value="none"
-						@change="setTransition"
-					></el-switch>
-				</el-form-item>
 			</el-form>
 		</div>
 	</el-drawer>
@@ -66,13 +53,12 @@
 import { reactive, ref } from "vue";
 import { Check, Moon, Sunny } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { useBase } from "/$/base";
 import { useDark } from "@vueuse/core";
 import { storage } from "/@/cool";
 import { Theme } from "../types";
 import { setTheme, themes } from "../utils";
 
-const { menu } = useBase();
+
 
 // 是否暗黑模式
 const isDark = ref(useDark());
@@ -114,16 +100,7 @@ function setComd(item: any) {
 	ElMessage.success(`切换主题：${item.label}`);
 }
 
-// 设置分组
-function setGroup(val: any) {
-	setTheme({ isGroup: val });
-	menu.setMenu();
-}
 
-// 设置转场动画
-function setTransition(val: any) {
-	setTheme({ transition: val });
-}
 </script>
 
 <style lang="scss">

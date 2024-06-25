@@ -13,7 +13,7 @@ export const config = {
 		// 菜单
 		menu: {
 			// 是否分组显示
-			isGroup: false,
+			isGroup: true,
 			// 自定义菜单列表
 			list: []
 		},
@@ -23,7 +23,7 @@ export const config = {
 			// 模式
 			mode: "history",
 			// 转场动画
-			transition: "slide"
+			transition: "none"
 		},
 
 		// 字体图标库

@@ -34,10 +34,10 @@
 
 				<template #dropdown>
 					<el-dropdown-menu>
-						<el-dropdown-item command="my">
+						<!-- <el-dropdown-item command="my">
 							<i class="cl-iconfont cl-icon-user"></i>
 							<span>个人中心</span>
-						</el-dropdown-item>
+						</el-dropdown-item> -->
 						<el-dropdown-item command="exit">
 							<i class="cl-iconfont cl-icon-exit"></i>
 							<span>退出</span>
@@ -86,7 +86,6 @@ const toolbar = reactive({
 
 	async init() {
 		const arr = orderBy(module.list.map((e) => e.toolbar).filter(Boolean), "order");
-
 		this.list = await Promise.all(
 			arr.map(async (e) => {
 				if (e) {

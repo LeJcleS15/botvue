@@ -10,68 +10,41 @@
 
 			<p class="desc">ALL In Onething</p>
 
-			<div class="form">
-				<el-form label-position="top" class="form" :disabled="saving">
-					<el-form-item label="用户名">
-						<input
-							v-model="form.username"
-							placeholder="请输入用户名"
-							maxlength="20"
-							type="text"
-							:readonly="readonly"
-							autocomplete="off"
-							@focus="readonly = false"
-						/>
-					</el-form-item>
-
-					<el-form-item label="密码">
-						<input
-							v-model="form.password"
-							type="password"
-							placeholder="请输入密码"
-							maxlength="20"
-							autocomplete="off"
-						/>
-					</el-form-item>
-
-					<el-form-item label="验证码">
-						<div class="row">
-							<input
-								v-model="form.verifyCode"
-								placeholder="图片验证码"
-								maxlength="4"
-								@keyup.enter="toLogin"
-							/>
-
-							<pic-captcha
-								:ref="setRefs('picCaptcha')"
-								v-model="form.captchaId"
-								@change="
-									() => {
-										form.verifyCode = '';
-									}
-								"
-							/>
-						</div>
-					</el-form-item>
-
-					<div class="op">
-						<el-button type="primary" :loading="saving" @click="toLogin"
-							>登录</el-button
-						>
-					</div>
-					<div class="op">
+			<div class="op">
 						<el-button type="primary" :loading="saving" @click="toLogintest"
-							>{{ metamask.isConnect.value ? '退出登录' : '连接钱包' }}</el-button
+							>{{		isWalletConnected ? '退出登录' : '连接钱包' }}</el-button
 						>
-					</div>
-				</el-form>
+			</div>
+
+			<div v-if="!isWalletConnected">
+			
+			</div>
+			<div class="notice_chart"  v-else>
+				<p class="desc">
+					欢迎您选择AIO BOT , 如果你想享受AIO BOT服务, 请及时添加官方客服
+				</p>
+				<!-- 在这里添加你想要显示的连接成功后的消息内容 -->
+				<p class="column">
+					<h1>目前 AIO BOT支持:</h1>
+					<h3>撸毛工具</h3>
+					<ul>
+						<li>zks空投工具</li>
+						<li>base空投工具</li>
+					</ul>
+					<h3>铭文Mint工具</h3>
+					<ul>
+						<li>全链Mint</li>
+						<li></li>
+					</ul>
+					<h3>临时工具</h3>
+				</p>
 			</div>
 		</div>
 
 		<!-- <div class="bg">
 			<cl-svg name="bg"></cl-svg>
 		</div> -->
+			<!-- 显示连接钱包按钮或者连接成功的消息 -->
 
 
 	</div>
@@ -82,37 +55,41 @@ import { reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useCool } from "/@/cool";
 import { useBase } from "/$/base";
-import PicCaptcha from "./components/pic-captcha.vue";
 import { storage } from "/@/cool/utils";
 import { useConnectMetamask } from "../../hooks/use-connect-metamask";
 const { refs, setRefs, router, service } = useCool();
 const { user, app } = useBase();
+const emit = defineEmits(["update:modelValue", "change"]);
 
 const metamask = useConnectMetamask();
 // 状态
 const saving = ref(false);
 
-// 避免自动填充
-const readonly = ref(true);
+// 钱包连接状态
+const isWalletConnected = ref(false);
 
+const nonce = ref("");
 // 表单数据
 const form = reactive({
-	username: storage.get("username") || "",
+	username: "",
 	password: "",
 	captchaId: "",
 	verifyCode: ""
 });
 
+
 const toLogintest = async () => {
-    if (metamask.isConnect.value) {
+    if (isWalletConnected.value) {
         await logout(); // 执行退出登录操作
     } else {
         await connectWallet(); // 执行连接钱包操作
     }
 };
+
 const logout = async () => {
     // 执行退出登录操作，例如清除用户信息等
 	metamask.disconnect();
+	isWalletConnected.value = false;
 	console.log(metamask.isConnect.value)
     console.log('退出登录');
     // 这里可以添加退出登录的逻辑
@@ -120,34 +97,43 @@ const logout = async () => {
 const connectWallet = async () => {
     saving.value = true;
     try {
-        await metamask.connectMetamask();
-        if (metamask.isConnect.value) {
-            console.log('钱包连接成功！');
-        } else {
-			console.log(metamask.isConnect.value);
-            console.error('钱包连接失败！');
-        }
+		await getGenNonceFromBackend();
+		console.log(nonce);
+        const tx = await metamask.connectMetamask(nonce.value);
+		const signature = tx.signature;
+		const address = tx.from[0];
+		form.username = address;
+		form.password = signature;
+		isWalletConnected.value = true;
+		console.log('钱包连接成功！');
+		await toLogin();
+		console.log(form.captchaId)
     } catch (error) {
-        console.error('连接钱包出错：', error);
-        ElMessage.error('连接钱包出错，请重试！');
+        ElMessage.info('请充值以便享受后续服务：');
     } finally {
         saving.value = false;
     }
 };
+async function getGenNonceFromBackend() {
+	await service.base.open
+					.genNonce({
+
+					}).then(({ captchaId, data }) => {
+						form.captchaId = captchaId;
+						console.log(data);
+						nonce.value = data;
+						emit("update:modelValue", captchaId);
+						emit("change", {
+							nonce,
+							captchaId
+						});
+					})
+					.catch((err) => {
+						ElMessage.error(err.message);
+					});
+}
 // 登录
 async function toLogin() {
-
-	if (!form.username) {
-		return ElMessage.error("用户名不能为空");
-	}
-
-	if (!form.password) {
-		return ElMessage.error("密码不能为空");
-	}
-
-	if (!form.verifyCode) {
-		return ElMessage.error("图片验证码不能为空");
-	}
 
 	saving.value = true;
 
@@ -182,12 +168,13 @@ $color: #2c3142;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100vh; /* 修改为min-height */
 	width: 100%;
 	position: relative;
 	background-color: #000;
 	color: $color;
-
+	overflow-y: auto; /* 添加垂直滚动 */
+	
 	.bg {
 		position: absolute;
 		left: 0;
@@ -219,7 +206,7 @@ $color: #2c3142;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		height: 100%;
+		height: 80%;
 		width: 100%;
 		position: absolute;
 		right: 0;
@@ -227,7 +214,7 @@ $color: #2c3142;
 		z-index: 9;
 
 		.logo {
-			height: 50px;
+			height: 100px;
 			margin-bottom: 20px;
 			display: flex;
 			align-items: center;
@@ -258,6 +245,14 @@ $color: #2c3142;
 			letter-spacing: 1px;
 			margin-bottom: 50px;
 			color: #fff;
+		}
+		.notice_chart {
+			position: absolute;
+			left: 0;
+			bottom: -400px;
+			height: 40%;
+			width: 90%;
+			text-align: left;
 		}
 
 		.form {
@@ -310,6 +305,37 @@ $color: #2c3142;
 					}
 				}
 			}
+		}
+		.column {
+			background-color: #000; // 修改为黑色背景
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 40px; // 适当调整内边距
+			margin-bottom: 10px;
+			color: #fff; // 文字颜色设置为白色
+			left: 40px;
+		}
+
+		.column h1 {
+			left: 40px;
+			font-size: 36px; // 标题字号稍微调小一点
+			margin-bottom: 20px; // 适当调整标题与内容的间距
+		}
+
+		.column h3 {
+			left: 60px;
+			font-size: 18px; // 副标题字号稍微调小一点
+			margin-bottom: 20px; // 适当调整副标题与内容的间距
+		}
+
+		.column ul {
+			list-style-type: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		.column ul li {
+			margin-bottom: 15px; // 调整列表项间距
 		}
 
 		.op {
