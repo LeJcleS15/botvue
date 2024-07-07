@@ -184,10 +184,11 @@
   </template>
   
   <script lang="ts" setup>
-  import { ref, reactive, onMounted, watch, computed } from 'vue';
+  import { ref, reactive, onMounted, watch, computed , onBeforeUnmount } from 'vue';
   import { useCrud } from "@cool-vue/crud";
   import { useCool } from "/@/cool";
   import { Divider } from 'ant-design-vue';
+  
   const { service } = useCool();
   
   const Crud = useCrud({ service: service.scroll.run }, (app) => {
@@ -229,6 +230,11 @@
   const executionLog = ref('');
   const successLog   = ref('');
   const failureLog   = ref('');
+  let ws = null;
+  let clientId = null;
+  const heartbeatInterval = 30000; // 每隔30秒发送一次心跳
+  let heartbeatTimer = null;
+ 
   
   const idCounter = ref(localStorage.getItem('idCounter') ? parseInt(localStorage.getItem('idCounter')) : 1);
   
@@ -250,6 +256,48 @@
   
   onMounted(() => {
 	fetchLocalStorageData();
+	ws = new WebSocket('/ws');
+  
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+        startHeartbeat();
+    };
+  
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data); 
+  	  const id = message.clientId;
+  	  const success = message.successLog;
+  	  const failure = message.failureLog;
+  	  if (id) {
+  	  	clientId = id;
+  	  }
+  	  if (success) {
+  	  	successLog.value += `\n${success}`;
+  	  }
+  	  if (failure) {
+  	  	failureLog.value += `\n${failure}`;
+  	  }
+    };
+    
+    ws.onclose = () => {
+        console.log('WebSocket closed');
+        clearInterval(heartbeatTimer);
+    };
+    function startHeartbeat() {
+      heartbeatTimer = setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          // 发送心跳消息，例如一个空消息
+          ws.send('');
+        }
+      }, heartbeatInterval);
+    }
+    
+    function stopWebSocket() {
+      if (ws) {
+        ws.close();
+        clearInterval(heartbeatTimer);
+      }
+    }
   });
   
   watch(data, saveDataToLocalStorage, { deep: true });
@@ -301,6 +349,7 @@
 			pause_max: pause_max.value,
 			amount_min: amount_min.value,
 			amount_max: amount_max.value,
+			clientId: clientId,
 		};
 		console.log(config)
 		
@@ -375,6 +424,15 @@
 		rowSelection.selectedRowKeys.push(...groupRows);
 	  });
 	}
+  });
+  
+
+  
+  // 在页面销毁前关闭WebSocket连接
+  onBeforeUnmount(() => {
+    if (ws) {
+      ws.close();
+    }
   });
   </script>
   <style scoped>
